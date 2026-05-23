@@ -13,7 +13,10 @@ jobs:
       BASE_URL: ${{ vars.BASE_URL }}
       API_BASE_URL: ${{ vars.API_BASE_URL }}
       TEST_ENV: ${{ vars.TEST_ENV }}
-      TEST_USER: ${{ secrets.TEST_USER }}
+      TEST_USER_L1: ${{ vars.TEST_USER_L1 }}
+      TEST_USER_L2: ${{ vars.TEST_USER_L2 }}
+      TEST_USER_L3: ${{ vars.TEST_USER_L3 }}
+      TEST_USER_L4: ${{ vars.TEST_USER_L4 }}
       TEST_PASSWORD: ${{ secrets.TEST_PASSWORD }}
       INFLUX_URL: ${{ secrets.INFLUX_URL }}
       INFLUX_TOKEN: ${{ secrets.INFLUX_TOKEN }}

@@ -22,6 +22,12 @@ def api() -> ApiClient:
     client.close()
 
 
+@pytest.fixture
+def account():
+    """Return a test account by permission level: account(3)."""
+    return settings.account
+
+
 def _suite_of(nodeid: str) -> str:
     if "tests/api" in nodeid:
         return "api"
