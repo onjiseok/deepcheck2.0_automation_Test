@@ -1,0 +1,88 @@
+{
+  "annotations": { "list": [] },
+  "editable": true,
+  "schemaVersion": 39,
+  "title": "deepcheck 2.0 - Automation Test Results",
+  "tags": ["deepcheck", "automation"],
+  "time": { "from": "now-7d", "to": "now" },
+  "templating": {
+    "list": [
+      {
+        "name": "suite",
+        "type": "custom",
+        "query": "ui,api,other",
+        "current": { "text": "All", "value": "$__all" },
+        "includeAll": true,
+        "multi": true
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": 1,
+      "title": "Pass rate",
+      "type": "stat",
+      "gridPos": { "h": 6, "w": 6, "x": 0, "y": 0 },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percentunit",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "red", "value": null },
+              { "color": "yellow", "value": 0.9 },
+              { "color": "green", "value": 0.99 }
+            ]
+          }
+        }
+      },
+      "datasource": { "type": "influxdb", "uid": "influxdb" },
+      "targets": [
+        {
+          "refId": "A",
+          "query": "from(bucket: \"test_results\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"test_result\" and r._field == \"passed\")\n  |> filter(fn: (r) => contains(value: r.suite, set: ${suite:json}))\n  |> mean()"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "title": "Outcomes over time",
+      "type": "timeseries",
+      "gridPos": { "h": 6, "w": 18, "x": 6, "y": 0 },
+      "datasource": { "type": "influxdb", "uid": "influxdb" },
+      "targets": [
+        {
+          "refId": "A",
+          "query": "from(bucket: \"test_results\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"test_result\" and r._field == \"passed\")\n  |> filter(fn: (r) => contains(value: r.suite, set: ${suite:json}))\n  |> aggregateWindow(every: v.windowPeriod, fn: count, createEmpty: false)\n  |> group(columns: [\"outcome\"])"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "title": "Slowest tests (avg duration)",
+      "type": "table",
+      "gridPos": { "h": 9, "w": 12, "x": 0, "y": 6 },
+      "fieldConfig": { "defaults": { "unit": "s" } },
+      "datasource": { "type": "influxdb", "uid": "influxdb" },
+      "targets": [
+        {
+          "refId": "A",
+          "query": "from(bucket: \"test_results\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"test_result\" and r._field == \"duration\")\n  |> filter(fn: (r) => contains(value: r.suite, set: ${suite:json}))\n  |> group(columns: [\"test\"])\n  |> mean()\n  |> group()\n  |> sort(columns: [\"_value\"], desc: true)\n  |> limit(n: 20)"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "title": "Failures (recent)",
+      "type": "table",
+      "gridPos": { "h": 9, "w": 12, "x": 12, "y": 6 },
+      "datasource": { "type": "influxdb", "uid": "influxdb" },
+      "targets": [
+        {
+          "refId": "A",
+          "query": "from(bucket: \"test_results\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"test_result\" and r._field == \"passed\" and r._value == 0)\n  |> filter(fn: (r) => contains(value: r.suite, set: ${suite:json}))\n  |> keep(columns: [\"_time\", \"test\", \"suite\", \"branch\", \"commit\"])\n  |> sort(columns: [\"_time\"], desc: true)\n  |> limit(n: 50)"
+        }
+      ]
+    }
+  ]
+}
