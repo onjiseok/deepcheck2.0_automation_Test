@@ -87,10 +87,25 @@ def main():
             submit.click()
             page.wait_for_timeout(1500)
         page.screenshot(path=str(OUT / "worker_register_errors.png"), full_page=True)
-        snapshot(dialog, "사전가입 등록 - 오류 행 제출 후 에러 테이블")
+
+        # Concise result only (full snapshot saved to file to avoid huge stdout).
+        print("\n--- 제출 결과 요약 ---")
+        try:
+            print("alert:", dialog.get_by_role("alert").inner_text())
+        except Exception as e:
+            print(f"(alert 없음: {e})")
+        print("--- 에러 테이블 행 ---")
+        for r in dialog.get_by_role("row").all():
+            t = r.inner_text().replace("\n", " | ").strip()
+            if any(k in t for k in ("오류 내용", "전화번호", "이름", "협력사")) and "예)" not in t:
+                print(t)
+        (OUT / "worker_register_errors.txt").write_text(
+            dialog.aria_snapshot(), encoding="utf-8"
+        )
+        print(f"\n전체 스냅샷: {OUT / 'worker_register_errors.txt'}")
 
         browser.close()
-    print(f"\nScreenshots: {OUT.resolve()}")
+    print(f"Screenshots: {OUT.resolve()}")
 
 
 if __name__ == "__main__":
