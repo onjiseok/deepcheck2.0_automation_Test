@@ -4,7 +4,10 @@ Each test/parameter id carries its TC_ID for traceability in Grafana.
 Selectors beyond the email/password fields are inferred from the spec and
 should be confirmed by a verification run against the dev site.
 """
+import re
+
 import pytest
+from playwright.sync_api import expect
 
 from config.settings import settings
 from pages.login_page import LoginPage
@@ -33,7 +36,7 @@ EMAIL_VALIDATION = [
 def test_email_validation_message(login_page, tc_id, value, message):
     login_page.fill_email(value)
     login_page.blur()
-    assert login_page.message(message).is_visible()
+    expect(login_page.message(message)).to_be_visible()
 
 
 # --- 비밀번호 입력 유효성 (focus-out 안내문구) ---
@@ -52,7 +55,7 @@ PASSWORD_VALIDATION = [
 def test_password_validation_message(login_page, tc_id, value, message):
     login_page.fill_password(value)
     login_page.blur()
-    assert login_page.message(message).is_visible()
+    expect(login_page.message(message)).to_be_visible()
 
 
 # --- 로그인 버튼 활성화/비활성화 ---
@@ -95,7 +98,7 @@ def test_password_masked_by_default(login_page):
 @pytest.mark.skipif(3 not in settings.accounts, reason="level-3 account not configured")
 def test_login_success(page, account):  # TC_024_001
     LoginPage(page).open().login(account(3))
-    assert "/login" not in page.url
+    expect(page).not_to_have_url(re.compile(r"/login"))
 
 
 @requires_app
@@ -103,7 +106,8 @@ def test_login_fail_wrong_password(login_page):  # TC_023_002
     login_page.fill_email("careup_test@deep-medi.com")
     login_page.fill_password("wrongpw1!")
     login_page.submit()
-    assert login_page.message("이메일 또는 비밀번호를 다시 한 번 확인해 주십시오.").is_visible()
+    # Spacing of the message varies in the spec; match the distinctive phrasing.
+    expect(login_page.page.get_by_text(re.compile("이메일.*비밀번호.*확인"))).to_be_visible()
 
 
 # --- 자동화 보류: 별도 결정/인프라 필요 (아래 사유 참조) ---
