@@ -1,9 +1,12 @@
 from __future__ import annotations
 
+import re
+
 import pytest
 
 from clients.api_client import ApiClient
 from config.settings import settings
+from pages.login_page import LoginPage
 from reporting.influx_reporter import InfluxReporter
 
 _reporter = InfluxReporter()
@@ -26,6 +29,28 @@ def api() -> ApiClient:
 def account():
     """Return a test account by permission level: account(3)."""
     return settings.account
+
+
+@pytest.fixture(scope="session")
+def auth_storage_state(browser, base_url):
+    """Log in once (level 3) and capture the storage state for reuse."""
+    context = browser.new_context(base_url=base_url)
+    page = context.new_page()
+    LoginPage(page).open().login(settings.account(3))
+    page.wait_for_url(re.compile(r"/dashboard"), timeout=20000)
+    state = context.storage_state()
+    context.close()
+    return state
+
+
+@pytest.fixture
+def logged_in_page(browser, base_url, auth_storage_state):
+    """A page already authenticated as level 3, landed on the dashboard."""
+    context = browser.new_context(base_url=base_url, storage_state=auth_storage_state)
+    page = context.new_page()
+    page.goto("/dashboard")
+    yield page
+    context.close()
 
 
 def _suite_of(nodeid: str) -> str:
