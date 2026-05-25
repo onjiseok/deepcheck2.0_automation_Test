@@ -8,6 +8,9 @@ Outputs screenshots to ./artifacts/ and prints any visible page text.
 This is a throwaway investigation aid, not part of the test suite.
 """
 import pathlib
+import sys
+
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent))
 
 from playwright.sync_api import sync_playwright
 
