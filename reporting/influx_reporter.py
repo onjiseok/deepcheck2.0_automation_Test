@@ -50,7 +50,13 @@ class InfluxReporter:
             .field("passed", 1 if outcome == "passed" else 0)
             .time(datetime.now(timezone.utc))
         )
-        self._write_api.write(bucket=self._bucket, record=point)
+        try:
+            self._write_api.write(bucket=self._bucket, record=point)
+        except Exception as exc:
+            # Telemetry must never break the test run: disable after first failure.
+            print(f"[influx-reporter] disabled (InfluxDB unreachable): {exc}")
+            self.close()
+            self._write_api = None
 
     def close(self) -> None:
         if self._client is not None:
