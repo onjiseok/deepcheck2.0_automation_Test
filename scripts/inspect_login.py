@@ -1,11 +1,10 @@
-"""Diagnostic helper: capture what the real login screen does for the cases
-that failed verification, so selectors/messages can be confirmed.
+"""Diagnostic helper: capture the real inline-validation message the login
+screen shows for each password input, so test assertions use exact wording.
 
 Run (with .env configured, browser visible):
     python scripts/inspect_login.py
 
-Outputs screenshots to ./artifacts/ and prints any visible page text.
-This is a throwaway investigation aid, not part of the test suite.
+Prints 'PW=<input>  ERROR=<message>' for each case. Throwaway aid, not a test.
 """
 import pathlib
 import sys
@@ -16,51 +15,36 @@ from playwright.sync_api import sync_playwright
 
 from config.settings import settings
 
-OUT = pathlib.Path("artifacts")
-OUT.mkdir(exist_ok=True)
 LOGIN_URL = settings.base_url.rstrip("/") + "/login"
 
+# Static labels on the login screen; anything else is the validation message.
+KNOWN = {"이메일", "비밀번호", "로그인", "비밀번호 재설정", "협력사 등록하기"}
 
-def dump(page, name):
-    page.screenshot(path=str(OUT / f"{name}.png"), full_page=True)
-    text = page.locator("body").inner_text()
-    print(f"\n===== {name} | url={page.url} =====")
-    print(text[:1500])
+PASSWORD_INPUTS = ["", "abcdefgh", "Qw1!abc", "aaaa1234!", "abcd1234!", "test1234!"]
+
+
+def error_text(page) -> str:
+    lines = [ln.strip() for ln in page.locator("body").inner_text().splitlines()]
+    extras = [ln for ln in lines if ln and ln not in KNOWN]
+    return " | ".join(extras) if extras else "(no message)"
 
 
 def main():
     with sync_playwright() as p:
-        browser = p.chromium.launch(headless=False, slow_mo=300)
+        browser = p.chromium.launch(headless=False, slow_mo=200)
 
-        # A) password complexity message on the LOGIN screen?
-        page = browser.new_context().new_page()
-        page.goto(LOGIN_URL)
-        page.get_by_role("textbox", name="비밀번호").fill("abcdefgh")
-        page.locator("body").click()
-        page.wait_for_timeout(1500)
-        dump(page, "pw_complexity_abcdefgh")
-
-        # B) wrong-password login failure popup
-        page = browser.new_context().new_page()
-        page.goto(LOGIN_URL)
-        page.get_by_role("textbox", name="이메일").fill("careup_test@deep-medi.com")
-        page.get_by_role("textbox", name="비밀번호").fill("wrongpw1!")
-        page.get_by_role("button", name="로그인").click()
-        page.wait_for_timeout(3000)
-        dump(page, "login_fail")
-
-        # C) successful login destination
-        page = browser.new_context().new_page()
-        page.goto(LOGIN_URL)
-        acc = settings.account(3)
-        page.get_by_role("textbox", name="이메일").fill(acc.email)
-        page.get_by_role("textbox", name="비밀번호").fill(acc.password)
-        page.get_by_role("button", name="로그인").click()
-        page.wait_for_timeout(4000)
-        dump(page, "login_success")
+        print("\n--- password validation messages (login screen) ---")
+        for value in PASSWORD_INPUTS:
+            page = browser.new_context().new_page()
+            page.goto(LOGIN_URL)
+            if value:
+                page.get_by_role("textbox", name="비밀번호").fill(value)
+            page.locator("body").click()
+            page.wait_for_timeout(800)
+            print(f"PW={value!r:14}  ERROR={error_text(page)}")
+            page.close()
 
         browser.close()
-    print(f"\nScreenshots saved in: {OUT.resolve()}")
 
 
 if __name__ == "__main__":
