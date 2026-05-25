@@ -55,9 +55,22 @@ def main():
         print("\n--- 사전가입 진입 버튼 후보 수:", btn.count())
         if btn.count():
             btn.first.click()
-            page.wait_for_timeout(2000)
+            page.wait_for_timeout(1500)
+            # Switch to the direct-input tab where name/phone/agency fields live.
+            tab = page.get_by_role("tab", name=re.compile("직접 입력"))
+            if tab.count():
+                tab.first.click()
+                page.wait_for_timeout(1500)
             page.screenshot(path=str(OUT / "worker_register.png"), full_page=True)
-            snapshot(page, "사전가입 등록 form")
+            snapshot(page, "사전가입 등록 - 직접 입력 form")
+
+            # Trigger validation by attempting to submit an empty form (no record
+            # is created on invalid input), then snapshot the inline errors.
+            submit = page.get_by_role("button", name=re.compile("오류 확인 및 등록|등록"))
+            if submit.count() and submit.first.is_enabled():
+                submit.first.click()
+                page.wait_for_timeout(1200)
+                snapshot(page, "사전가입 등록 - 빈 폼 제출 후 에러")
 
         browser.close()
     print(f"\nScreenshots: {OUT.resolve()}")
