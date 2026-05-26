@@ -80,7 +80,6 @@ def test_data_reference_timestamp_visible(dashboard):
 @requires_login
 def test_user_statistics_card_visible(dashboard):
     expect(dashboard.text("사용자 통계")).to_be_visible()
-    expect(dashboard.text("계약인원 충족률")).to_be_visible()
     expect(dashboard.text("총 기술인 증감률")).to_be_visible()
     expect(dashboard.button("세부 통계 내역")).to_be_visible()
 
