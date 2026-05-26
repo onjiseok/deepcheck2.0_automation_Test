@@ -37,7 +37,8 @@ class SurveyPage(BasePage):
 
     @property
     def survey_type_combobox(self) -> Locator:
-        return self.page.get_by_text("데일리 한랭질환 증상 점검")
+        # The label text also appears in a header; target the combobox itself.
+        return self.page.get_by_role("combobox").filter(has_text="데일리 한랭질환")
 
     @property
     def agency_combobox(self) -> Locator:

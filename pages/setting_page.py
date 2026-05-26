@@ -17,6 +17,8 @@ class SettingPage(BasePage):
 
     def open(self) -> "SettingPage":
         self.goto_via_nav("설정", self.subnav_link("기본 설정"))
+        # Section content (toggles, 저장/취소) is lazily rendered after nav.
+        self.toggles.first.wait_for(state="visible", timeout=15000)
         return self
 
     def subnav_link(self, name: str) -> Locator:
