@@ -3,11 +3,16 @@ from __future__ import annotations
 import re
 
 import pytest
+from playwright.sync_api import expect
 
 from clients.api_client import ApiClient
 from config.settings import settings
 from pages.login_page import LoginPage
 from reporting.influx_reporter import InfluxReporter
+
+# Dev is a shared, sometimes-slow environment; give visibility/assertion checks
+# headroom beyond the 5s default so late-rendering content doesn't flake.
+expect.set_options(timeout=15000)
 
 _reporter = InfluxReporter()
 

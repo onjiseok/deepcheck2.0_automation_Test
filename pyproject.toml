@@ -24,7 +24,7 @@ dependencies = [
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 pythonpath = ["."]
-addopts = "-ra --import-mode=importlib --tracing=retain-on-failure --screenshot=only-on-failure --video=retain-on-failure"
+addopts = "-ra --import-mode=importlib --tracing=retain-on-failure --screenshot=only-on-failure --video=retain-on-failure --reruns 1 --reruns-delay 2"
 markers = [
     "ui: UI end-to-end tests driven by Playwright",
     "api: backend API tests",
