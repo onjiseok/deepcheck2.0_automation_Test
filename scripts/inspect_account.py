@@ -65,7 +65,7 @@ def main():
 
         # Try opening a create dialog (계정 등록/추가) WITHOUT submitting, to learn
         # the form fields for later validation tests.
-        create = page.get_by_role("button", name=re.compile("계정 (등록|추가|생성)|등록"))
+        create = page.get_by_role("button", name=re.compile("현장 관리자 추가|추가하기|계정.*추가"))
         if create.count():
             try:
                 create.first.click()
