@@ -48,6 +48,8 @@ def test_toggles_present(setting):
 # --- 변경 전 기본 상태: 모든 저장/취소 버튼 비활성 ---
 @requires_login
 def test_save_buttons_disabled_by_default(setting):
+    # 폼 섹션은 지연 렌더링되므로 첫 버튼이 보일 때까지 대기 후 집계한다.
+    expect(setting.save_buttons.first).to_be_visible()
     buttons = setting.save_buttons
     count = buttons.count()
     assert count > 0, "저장 버튼을 찾지 못함"
@@ -57,6 +59,7 @@ def test_save_buttons_disabled_by_default(setting):
 
 @requires_login
 def test_cancel_buttons_disabled_by_default(setting):
+    expect(setting.cancel_buttons.first).to_be_visible()
     buttons = setting.cancel_buttons
     count = buttons.count()
     assert count > 0, "취소 버튼을 찾지 못함"
