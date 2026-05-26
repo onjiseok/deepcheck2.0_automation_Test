@@ -25,9 +25,7 @@ class MeasurePage(BasePage):
     )
 
     def open(self) -> "MeasurePage":
-        # SPA pushState nav fires no 'load' event; wait on a measure-only element.
-        self.page.get_by_role("link", name="미측정 현황").click()
-        self.heading.wait_for(state="visible", timeout=20000)
+        self.goto_via_nav("미측정 현황", self.heading)
         return self
 
     @property

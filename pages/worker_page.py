@@ -29,10 +29,7 @@ class WorkerPage(BasePage):
     )
 
     def open(self) -> "WorkerPage":
-        # SPA client-side nav (pushState) fires no 'load' event, so wait on a
-        # worker-page-only element instead of wait_for_url(... until='load').
-        self.page.get_by_role("link", name="기술인 관리").click()
-        self.register_button.wait_for(state="visible", timeout=20000)
+        self.goto_via_nav("기술인 관리", self.register_button)
         return self
 
     # --- 사전가입자 등록 진입 ---
