@@ -32,6 +32,11 @@ class LoginPage(BasePage):
     def reset_password_link(self) -> Locator:
         return self.page.get_by_text("비밀번호 재설정")
 
+    @property
+    def login_fail_dialog(self) -> Locator:
+        """Popup shown on failed login (로그인 실패)."""
+        return self.page.get_by_role("dialog")
+
     def message(self, text: str) -> Locator:
         """Inline validation/guidance text, matched by its exact wording."""
         return self.page.get_by_text(text)

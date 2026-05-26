@@ -121,8 +121,10 @@ def test_login_fail_wrong_password(login_page):  # TC_023_002
     login_page.fill_email("careup_test@deep-medi.com")
     login_page.fill_password("wrongpw1!")
     login_page.submit()
-    # Spacing of the message varies in the spec; match the distinctive phrasing.
-    expect(login_page.page.get_by_text(re.compile("이메일.*비밀번호.*확인"))).to_be_visible()
+    # The failure surfaces in a popup; allow for auth round-trip latency.
+    expect(login_page.login_fail_dialog).to_contain_text(
+        "이메일 또는 비밀번호를 다시 한번 확인", timeout=15000
+    )
 
 
 # --- 자동화 보류: 별도 결정/인프라 필요 (아래 사유 참조) ---
