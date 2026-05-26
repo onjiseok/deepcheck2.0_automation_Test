@@ -21,22 +21,23 @@ class BasePage:
         link_name: str,
         ready: Locator,
         *,
-        attempts: int = 3,
-        per_timeout: int = 8000,
+        attempts: int = 4,
+        click_timeout: int = 12000,
+        ready_timeout: int = 12000,
     ) -> None:
         """Click a persistent nav link and wait for a destination-only element.
 
-        The app is an SPA: a nav click issued before hydration (or one lost to a
-        slow load) can be a no-op, so retry the click until the destination
-        renders. The nav bar is present on every page, making re-clicks safe.
+        The app is an SPA on a sometimes-slow network: a nav click can be a
+        no-op (issued before hydration) or hang (a loading overlay intercepts
+        the click). Both the click and the readiness wait are bounded and
+        retried; the nav bar is on every page, so re-clicks are safe.
         """
         link = self.page.get_by_role("link", name=link_name)
-        link.wait_for(state="visible", timeout=20000)
         last_error: Exception | None = None
         for _ in range(attempts):
-            link.click()
             try:
-                ready.wait_for(state="visible", timeout=per_timeout)
+                link.click(timeout=click_timeout)
+                ready.wait_for(state="visible", timeout=ready_timeout)
                 return
             except PlaywrightTimeoutError as error:
                 last_error = error
