@@ -40,36 +40,36 @@ def main():
         page.screenshot(path=str(OUT / "setting.png"), full_page=True)
 
         region = page.get_by_role("main")
-        print(f"\n##### 설정 | url={page.url} #####")
-        print("\n--- 제목/탭/링크 ---")
-        for h in region.get_by_role("heading").all():
-            print("heading:", h.inner_text().replace("\n", " ").strip())
-        for t in region.get_by_role("tab").all():
-            print("tab:", t.inner_text().replace("\n", " ").strip())
-        for lk in region.get_by_role("link").all():
-            print("link:", lk.inner_text().replace("\n", " ").strip())
-        print("\n--- 토글(switch)/체크박스/라디오 ---")
-        print("switch 수:", region.get_by_role("switch").count())
-        print("checkbox 수:", region.get_by_role("checkbox").count())
-        for r in region.get_by_role("radio").all():
-            print("radio:", r.inner_text().replace("\n", " ").strip())
-        print("\n--- 콤보 / 입력 ---")
-        for c in region.get_by_role("combobox").all():
-            print("combobox:", c.inner_text().replace("\n", " ").strip())
-        for tb in region.get_by_role("textbox").all():
-            nm = tb.get_attribute("name") or tb.get_attribute("placeholder") or "?"
-            print("textbox:", nm)
-        for sb in region.get_by_role("spinbutton").all():
-            nm = sb.get_attribute("name") or sb.get_attribute("placeholder") or "?"
-            print("spinbutton:", nm)
-        print("\n--- 버튼 ---")
-        for b in region.get_by_role("button").all():
-            txt = b.inner_text().replace("\n", " ").strip()
-            if txt:
-                print(f"button: {txt!r} enabled={b.is_enabled()}")
+        # Walk each settings sub-tab and dump its url + structure summary.
+        for tab in ("기본 설정", "설문조사", "알림 관리", "기기 관리"):
+            link = page.get_by_role("link", name=tab, exact=True)
+            if not link.count():
+                print(f"\n##### {tab}: 링크 없음 #####")
+                continue
+            link.first.click()
+            page.wait_for_timeout(2500)
+            slug = tab.replace(" ", "")
+            print(f"\n##### [{tab}] url={page.url} #####")
+            print("switch:", region.get_by_role("switch").count(),
+                  "| radio:", region.get_by_role("radio").count(),
+                  "| combobox:", region.get_by_role("combobox").count(),
+                  "| 저장:", region.get_by_role("button", name="저장", exact=True).count(),
+                  "| 취소:", region.get_by_role("button", name="취소", exact=True).count())
+            print("--- heading ---")
+            for h in region.get_by_role("heading").all():
+                t = h.inner_text().replace("\n", " ").strip()
+                if t:
+                    print("  h:", t)
+            print("--- 주요 버튼(텍스트 있는 것) ---")
+            seen = set()
+            for b in region.get_by_role("button").all():
+                t = b.inner_text().replace("\n", " ").strip()
+                if t and t not in seen and t not in ("저장", "취소"):
+                    seen.add(t)
+                    print(f"  btn: {t!r}")
+            (OUT / f"setting_{slug}.txt").write_text(region.aria_snapshot(), encoding="utf-8")
 
-        (OUT / "setting.txt").write_text(region.aria_snapshot(), encoding="utf-8")
-        print(f"\n전체 스냅샷: {OUT / 'setting.txt'}")
+        print(f"\n전체 스냅샷: artifacts/setting_<탭>.txt")
         browser.close()
     print(f"Screenshot: {(OUT / 'setting.png').resolve()}")
 
