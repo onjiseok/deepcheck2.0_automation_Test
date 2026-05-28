@@ -21,6 +21,11 @@ class SettingPage(BasePage):
         self.toggles.first.wait_for(state="visible", timeout=15000)
         return self
 
+    def open_tab(self, name: str) -> "SettingPage":
+        """Switch to a settings sub-tab (기본 설정/설문조사/알림 관리/기기 관리)."""
+        self.subnav_link(name).click()
+        return self
+
     def subnav_link(self, name: str) -> Locator:
         return self.page.get_by_role("link", name=name, exact=True)
 
