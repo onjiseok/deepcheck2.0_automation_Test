@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import re
+
 from playwright.sync_api import Locator, Page
 
 from config.settings import Account
@@ -36,6 +38,11 @@ class LoginPage(BasePage):
     def login_fail_dialog(self) -> Locator:
         """Popup shown on failed login (로그인 실패)."""
         return self.page.get_by_role("dialog")
+
+    @property
+    def password_visibility_toggle(self) -> Locator:
+        """비밀번호 보기/숨기기 토글 버튼."""
+        return self.page.get_by_role("button", name=re.compile("비밀번호 (보기|숨기기)"))
 
     def message(self, text: str) -> Locator:
         """Inline validation/guidance text, matched by its exact wording."""

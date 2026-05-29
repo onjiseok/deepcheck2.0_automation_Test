@@ -127,6 +127,77 @@ def test_login_fail_wrong_password(login_page):  # TC_023_002
     )
 
 
+# --- Placeholder / 비밀번호 보기 토글 / 경계값 (추가 표시 검증) ---
+@requires_app
+def test_email_placeholder(login_page):  # TC_001_011
+    expect(login_page.page.get_by_placeholder("이메일 주소를 입력해 주세요.")).to_be_visible()
+
+
+@requires_app
+def test_password_placeholder(login_page):  # TC_009_006
+    expect(login_page.page.get_by_placeholder("비밀번호를 입력해 주세요.")).to_be_visible()
+
+
+@requires_app
+def test_password_visibility_toggle(login_page):  # TC_009_003, TC_009_004
+    login_page.fill_password("qwer1234!")
+    expect(login_page.password).to_have_attribute("type", "password")
+    login_page.password_visibility_toggle.click()
+    expect(login_page.password).to_have_attribute("type", "text")
+    login_page.password_visibility_toggle.click()
+    expect(login_page.password).to_have_attribute("type", "password")
+
+
+@requires_app
+def test_email_2char_no_length_error(login_page):  # TC_001_003, TC_006_001 (경계값 2글자)
+    login_page.fill_email("ab")
+    login_page.blur()
+    expect(login_page.message("2글자 이상 입력해 주세요.")).not_to_be_visible()
+
+
+# --- 자동화 보류: 입력 제한/경계값(동작 미확정) ---
+@requires_app
+@pytest.mark.skip(reason="이메일 입력 제한/경계/자동변환 = 필드단계 제한 동작 미확정(실측 필요), 일부 미적용 가능 (TC_001_002, TC_001_004, TC_001_005, TC_001_007, TC_001_008, TC_001_009, TC_001_010, TC_005_001, TC_007_001, TC_008_001)")
+def test_email_input_restriction_and_boundary():
+    ...
+
+
+@requires_app
+@pytest.mark.skip(reason="비밀번호 입력 제한/전체삭제/경계 = 필드단계 제한 동작 미확정(실측 필요) (TC_009_005, TC_009_007, TC_016_001, TC_017_001, TC_018_001, TC_019_001, TC_020_001, TC_021_001)")
+def test_password_input_restriction_and_boundary():
+    ...
+
+
+@requires_app
+@pytest.mark.skip(reason="입력값 수정으로 error 해소 후 로그인 버튼 재비활성 = 동작 시퀀스, 추후 자동화 (TC_022_004)")
+def test_login_button_error_recovery():
+    ...
+
+
+@requires_app
+@pytest.mark.skip(reason="존재하지 않는 메일/계정 잠금 해제/팝업 닫힘 = 공유 계정 잠금 위험·데이터 (TC_023_001, TC_023_004, TC_023_005)")
+def test_login_failure_popup():
+    ...
+
+
+@requires_app
+@pytest.mark.skip(reason="비밀번호 재설정 요청 페이지(LGI) = 별도 페이지 객체 + 메일 발송, 전용 메일박스 필요 (TC_025_001, TC_025_002, TC_025_003, TC_025_004, TC_025_005, TC_025_006, TC_025_007, TC_025_008, TC_025_009, TC_025_010, TC_025_011, TC_025_012, TC_025_013)")
+def test_password_reset_request_page():
+    ...
+
+
+@requires_app
+@pytest.mark.skip(reason="메일 링크 진입 후 새 비밀번호 설정 페이지 = 메일 수신(테스트 메일박스) 필요 (TC_026_002, TC_026_003, TC_026_004, TC_026_005, TC_026_006, TC_026_008, TC_026_009, TC_026_010, TC_026_011, TC_026_012, TC_026_013, TC_026_014)")
+def test_password_reset_new_password_page():
+    ...
+
+
+@requires_app
+@pytest.mark.skip(reason="비밀번호 변경 진행 = 공유 계정 비밀번호 변경, 파괴적 + 메일 필요 (TC_027_001, TC_027_002, TC_027_003, TC_027_004, TC_027_006, TC_027_007, TC_027_008)")
+def test_password_change_flow():
+    ...
+
+
 # --- 자동화 보류: 별도 결정/인프라 필요 (아래 사유 참조) ---
 @requires_app
 @pytest.mark.skip(reason="계정 잠금: 공유 dev 계정을 잠그게 되어 위험. 전용 계정/DB 리셋 필요 (TC_023_003/004)")
