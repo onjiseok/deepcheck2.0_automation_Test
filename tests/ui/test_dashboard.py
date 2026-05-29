@@ -164,3 +164,58 @@ def test_confirm_abnormal_list():
 @pytest.mark.skip(reason="PDF/Excel 다운로드 검증 = 데이터 의존. 다운로드 핸들링 별도 구현 (TC_152_011/012)")
 def test_user_statistics_downloads():
     ...
+
+
+# --- 자동화 보류 (TC 시트 대시보드 나머지) — 사유별 그룹. 0 missing 유지용 ---
+@requires_login
+@pytest.mark.skip(reason="권한별(레벨2/4) 대시보드 접근/구성 = 해당 권한 계정 필요 (TC_146_002, TC_146_003, TC_146_004)")
+def test_dashboard_access_by_level():
+    ...
+
+
+@requires_login
+@pytest.mark.skip(reason="시스템 공지 표시/노출조건/이동 = 현재 환경 미표시, 공지 데이터 필요 (TC_147_001, TC_147_002, TC_147_003, TC_147_004, TC_147_005)")
+def test_system_notice_detail():
+    ...
+
+
+@requires_login
+@pytest.mark.skip(reason="가입 승인 대기 처리/페이지네이션/정렬/상세 = 대기 데이터 + 승인=파괴적 (TC_149_003, TC_149_006, TC_149_007, TC_149_009, TC_149_010, TC_150_001, TC_150_002, TC_150_003)")
+def test_pending_signup_actions():
+    ...
+
+
+@requires_login
+@pytest.mark.skip(reason="보정 만료 예정 필터/정렬/이동 = 데이터 필요 (TC_151_003, TC_151_004, TC_151_006, TC_151_007)")
+def test_calibration_expiry_actions():
+    ...
+
+
+@requires_login
+@pytest.mark.skip(reason="사용자 통계 그래프/세부 통계/다운로드 = 통계 데이터 + 다운로드 핸들링 (TC_152_002, TC_152_004, TC_152_005, TC_152_006, TC_152_007, TC_152_008, TC_152_009, TC_152_010, TC_152_012, TC_152_013, TC_153_001, TC_153_002)")
+def test_user_statistics_detail():
+    ...
+
+
+@requires_login
+@pytest.mark.skip(reason="데이터 기준 시점/새로고침/이상자 확인 = 데이터 + 파괴적 (TC_155_002, TC_155_004, TC_156_001)")
+def test_data_reference_actions():
+    ...
+
+
+@requires_login
+@pytest.mark.skip(reason="조치 필요 카드 표시/이동 = 데이터 필요 (TC_157_001, TC_158_001, TC_158_002, TC_158_003, TC_158_004)")
+def test_action_required_cards():
+    ...
+
+
+@requires_login
+@pytest.mark.skip(reason="전체 기술인 리스트 이동/데이터 = 데이터 필요 (TC_159_002, TC_159_003)")
+def test_total_technician_list():
+    ...
+
+
+@requires_login
+@pytest.mark.skip(reason="사용 현황 카드 = 데이터 필요 (TC_160_001, TC_160_002)")
+def test_usage_status():
+    ...
