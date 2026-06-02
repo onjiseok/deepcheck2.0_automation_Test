@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import pathlib
 import re
 
 import pytest
@@ -15,6 +16,60 @@ from reporting.influx_reporter import InfluxReporter
 expect.set_options(timeout=15000)
 
 _reporter = InfluxReporter()
+
+# --- TC_ID 매핑 ----------------------------------------------------------
+# 각 테스트 함수의 데코레이터+섹션 헤더 코멘트+본문에서 TC_xxx_xxx 패턴을 모아
+# nodeid → TC_ID 목록 매핑을 만든다. 새 포인트의 tc_id 태그로 사용된다.
+_TC_RE = re.compile(r"TC_\d{3}_\d{3}")
+_TESTS_DIR = pathlib.Path(__file__).resolve().parent / "tests"
+
+
+def _build_tc_map() -> dict[str, list[str]]:
+    m: dict[str, list[str]] = {}
+    if not _TESTS_DIR.exists():
+        return m
+    for py in _TESTS_DIR.rglob("*.py"):
+        try:
+            text = py.read_text(encoding="utf-8")
+        except OSError:
+            continue
+        lines = text.splitlines(keepends=True)
+        starts: list[tuple[int, str]] = []
+        for i, line in enumerate(lines):
+            mf = re.match(r"^def (test_\w+)", line)
+            if not mf:
+                continue
+            # 데코레이터 + 바로 앞에 붙은 섹션 코멘트까지 거슬러 올라간다.
+            # 빈 줄을 만나면 멈춰 → 다음 테스트의 헤더로 간주.
+            start = i
+            while start > 0:
+                prev = lines[start - 1]
+                if prev.strip() == "":
+                    break
+                stripped = prev.lstrip()
+                if stripped.startswith("@") or stripped.startswith("#"):
+                    start -= 1
+                    continue
+                break
+            starts.append((start, mf.group(1)))
+        for idx, (start, fname) in enumerate(starts):
+            end = starts[idx + 1][0] if idx + 1 < len(starts) else len(lines)
+            block = "".join(lines[start:end])
+            ids = sorted(set(_TC_RE.findall(block)))
+            key = f"{py.relative_to(_TESTS_DIR.parent).as_posix()}::{fname}"
+            m[key] = ids
+    return m
+
+
+_TC_MAP = _build_tc_map()
+
+
+def _tc_ids_for(nodeid: str) -> str:
+    base = nodeid.split("[", 1)[0]
+    ids = set(_TC_MAP.get(base, []))
+    if "[" in nodeid:
+        ids.update(_TC_RE.findall(nodeid[nodeid.index("["):]))
+    return ", ".join(sorted(ids)) if ids else "(untagged)"
 
 
 @pytest.fixture(scope="session")
@@ -77,6 +132,7 @@ def pytest_runtest_makereport(item, call):
             outcome=report.outcome,
             duration=report.duration,
             suite=_suite_of(report.nodeid),
+            tc_id=_tc_ids_for(report.nodeid),
         )
 
 

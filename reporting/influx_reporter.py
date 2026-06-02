@@ -35,7 +35,7 @@ class InfluxReporter:
     def active(self) -> bool:
         return self._write_api is not None
 
-    def record(self, *, nodeid: str, outcome: str, duration: float, suite: str) -> None:
+    def record(self, *, nodeid: str, outcome: str, duration: float, suite: str, tc_id: str = "") -> None:
         if not self.active:
             return
         point = (
@@ -43,6 +43,7 @@ class InfluxReporter:
             .tag("test", nodeid)
             .tag("suite", suite)
             .tag("outcome", outcome)
+            .tag("tc_id", tc_id or "(untagged)")
             .tag("env", settings.env)
             .tag("branch", settings.git_branch)
             .tag("commit", settings.git_commit)
