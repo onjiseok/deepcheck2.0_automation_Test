@@ -87,15 +87,17 @@ def test_total_count_visible(measure):
     expect(measure.total_count.first).to_be_visible()
 
 
-# --- 액션 버튼 디폴트 상태 (발송/다운로드 동작은 각각 TC_194/196 skip) ---
+# --- 액션 버튼 표시 (발송/다운로드 동작은 각각 TC_194/196 skip) ---
 @requires_login
-def test_send_notification_disabled_by_default(measure):
-    expect(measure.button("측정안내 알림 발송")).to_be_disabled()
+def test_send_notification_button_visible(measure):
+    # 버튼의 활성/비활성은 미측정자 수에 따라 달라져 단정하지 않는다(TC_194_006).
+    expect(measure.button("측정안내 알림 발송")).to_be_visible()
 
 
 @requires_login
-def test_excel_download_disabled_by_default(measure):
-    expect(measure.button("엑셀 다운로드")).to_be_disabled()
+def test_excel_download_button_visible(measure):
+    # 활성/비활성은 선택 항목/데이터에 따라 달라져 단정하지 않는다(TC_196).
+    expect(measure.button("엑셀 다운로드")).to_be_visible()
 
 
 @requires_login
