@@ -126,7 +126,9 @@ def pytest_runtest_makereport(item, call):
     outcome = yield
     report = outcome.get_result()
     # Record the test-body result, plus any setup failure (which masks the call).
-    if report.when == "call" or (report.when == "setup" and report.failed):
+    # Skipped는 setup 단계에서 skipped=True로 보고된다 — failed와 함께 포함시켜
+    # InfluxDB에 outcome="skipped"로 기록하고 TC별 결과 테이블에 노출시킨다.
+    if report.when == "call" or (report.when == "setup" and (report.failed or report.skipped)):
         _reporter.record(
             nodeid=report.nodeid,
             outcome=report.outcome,
